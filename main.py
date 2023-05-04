@@ -26,8 +26,11 @@ USER_AGENT = (
 
 
 def get_resolution_size():
-    # TODO: hard code
-    reg_path = r"SYSTEM\\ControlSet001\\Enum\\DISPLAY\AOC2403\\5&1ec8d87e&0&UID0\\Device Parameters"
+    reg_path = (
+        r"SYSTEM\\ControlSet001\\Enum\\DISPLAY"
+        r"\\AOC2403"  # TODO: hard code
+        r"\\5&1ec8d87e&0&UID0\\Device Parameters"
+    )
     info = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path)
     value = winreg.QueryValueEx(info, "EDID")[0]
 

@@ -26,6 +26,6 @@ if __name__ == "__main__":
         for img in list_wallpapers():
             print(f"Change to {img}")
             change(img)
-            time.sleep(60 * 60)
+            time.sleep(60 * 30)
     except KeyboardInterrupt:
         sys.exit(0)
