@@ -2,7 +2,7 @@
 import mimetypes
 import os
 import sys
-from typing import List
+from typing import List, Tuple
 
 try:
     from urlparse import urljoin
@@ -18,6 +18,8 @@ import requests
 from bs4 import BeautifulSoup
 from alive_progress import alive_it
 
+WALLPAPER_HOME = "E:\\wallpapers"
+
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -25,7 +27,7 @@ USER_AGENT = (
 )
 
 
-def get_resolution_size():
+def get_resolution_size() -> Tuple[int, int]:
     reg_path = (
         r"SYSTEM\\ControlSet001\\Enum\\DISPLAY"
         r"\\AOC2403"  # TODO: hard code
@@ -66,8 +68,7 @@ def download_image(url, name, save_to):
     if not r.ok:
         return
 
-    if not os.path.exists(save_to):
-        os.mkdir(save_to)
+    os.makedirs(save_to, exist_ok=True)
 
     ext = mimetypes.guess_extension(r.headers["Content-Type"])
     save_as = os.path.join(save_to, name + ext)
@@ -116,7 +117,7 @@ def main(count=1):
         detail = resolve_image_page(page)
         name = detail["name"].replace(" ", "+").replace("?", "")
         desc = detail["desc"].replace("/", "_").replace(",", "_").replace(" ", "_")
-        download_image(detail["url"], name + desc, "E:\\wallpapers\\")
+        download_image(detail["url"], name + desc, WALLPAPER_HOME)
 
 
 if __name__ == "__main__":
