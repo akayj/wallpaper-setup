@@ -1,5 +1,5 @@
 .venv/
-.vscode/
 .idea/
 
+.vscode/
 !.vscode/settings.json
