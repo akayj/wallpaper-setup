@@ -55,8 +55,7 @@ def resolve_image_page(url):
     meta = html.find("meta", attrs={"property": "og:image"})
     image_url = meta.attrs["content"]
 
-    details = html.find("div", class_="details")
-    detail_text = details.find("div", class_="text")
+    detail_text = html.select_one("div.details div.text")
     image_name = detail_text.find("h1").text
     image_desc = detail_text.find("h2").text
 
@@ -103,7 +102,7 @@ def list_images(top=1, rh=None, rw=None) -> List[str]:
 
     html = BeautifulSoup(r.content, "html.parser")
 
-    anchors = html.find("div", class_="wallpapersContent").find_all("a")[:top]
+    anchors = html.select("div.wallpapersContent a")[:top]
     return [urljoin("https://wallpaperhub.app/", a["href"]) for a in anchors]
 
 
