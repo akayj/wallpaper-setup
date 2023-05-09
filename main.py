@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import mimetypes
 import os
+import platform
+import re
+import subprocess
 import sys
 from typing import List, Tuple
 
@@ -9,16 +12,12 @@ try:
 except ImportError:
     from urllib.parse import urljoin
 
-try:
-    import winreg
-except ImportError:
-    import _winreg as winreg
 
 import requests
 from bs4 import BeautifulSoup
 from alive_progress import alive_it
 
-WALLPAPER_HOME = "E:\\wallpapers"
+WALLPAPER_HOME = os.getenv("WALLPAPER_HOME", "./wallpapers")
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -27,7 +26,12 @@ USER_AGENT = (
 )
 
 
-def get_resolution_size() -> Tuple[int, int]:
+def _get_win_resolution_size() -> Tuple[int, int]:
+    try:
+        import winreg
+    except ImportError:
+        import _winreg as winreg
+
     reg_path = (
         r"SYSTEM\\ControlSet001\\Enum\\DISPLAY"
         r"\\AOC2403"  # TODO: hard code
@@ -40,6 +44,31 @@ def get_resolution_size() -> Tuple[int, int]:
     height = value[59] + (value[61] >> 4) * 256
 
     return width, height
+
+
+def _get_mac_resolution_size() -> Tuple[int, int] or None:
+    x = subprocess.run(["system_profiler", "SPDisplaysDataType"], capture_output=True)
+    if x.returncode:
+        return
+
+    for line in x.stdout.splitlines():
+        if b"Resolution" in line:
+            line = line.strip()
+            g = re.findall(rb"\d+", line)
+            if len(g) != 2:
+                break
+            return int(g[0]), int(g[1])
+
+
+def get_resolution_size() -> Tuple[int, int] or None:
+    system_name = platform.system().lower()
+
+    if system_name == "darwin":
+        return _get_mac_resolution_size()
+    elif system_name == "windows":
+        return _get_win_resolution_size()
+
+    return None
 
 
 def resolve_image_page(url):
@@ -95,6 +124,7 @@ def list_images(top=1, rh=None, rw=None) -> List[str]:
         "https://wallpaperhub.app/wallpapers",
         headers={"User-Agent": USER_AGENT},
         params=qs,
+        timeout=5,
     )
     if not r.ok:
         print(f"fetch image list failed: {r.reason}")
@@ -107,10 +137,16 @@ def list_images(top=1, rh=None, rw=None) -> List[str]:
 
 
 def main(count=1):
-    rw, rh = get_resolution_size()
+    size = get_resolution_size()
+    if size is None:
+        sys.stderr.write("could not resolve display resolution")
+        return
+
+    rw, rh = size
     print(f"resolved resolution, width: {rw}, height: {rh}")
 
     page_links = list_images(count, rh, rw)
+    print(f"find {len(page_links)} images")
 
     for page in page_links:
         detail = resolve_image_page(page)
