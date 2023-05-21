@@ -23,10 +23,11 @@ def list_wallpapers(reverse=True):
 
 if __name__ == "__main__":
     try:
-        for img in list_wallpapers():
-            t = time.strftime("%Y-%m-%d %H:%M:%S")
-            print(f"{t} Change to {img}")
-            change(img)
-            time.sleep(60 * 30)
+        while 1:
+            for img in list_wallpapers():
+                t = time.strftime("%Y-%m-%d %H:%M:%S")
+                print(f"{t} Change to {img}")
+                change(img)
+                time.sleep(60 * 30)
     except KeyboardInterrupt:
         sys.exit(0)

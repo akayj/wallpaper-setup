@@ -146,7 +146,8 @@ def main(count=1):
     print(f"resolved resolution, width: {rw}, height: {rh}")
 
     page_links = list_images(count, rh, rw)
-    print(f"find {len(page_links)} images")
+    if len(page_links) > 0:
+        print(f"{len(page_links)} images will download to {WALLPAPER_HOME}")
 
     for page in page_links:
         detail = resolve_image_page(page)
